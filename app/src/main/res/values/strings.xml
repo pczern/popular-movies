@@ -1,4 +1,37 @@
 <resources>
     <string name="app_name">Popular Movies</string>
     <string name="tmdb_api_key">@string/secret_tmdb_api_key</string>
+    <string name="tmdb_parameter_api_key">api_key</string>
+    <string name="tmdb_parameter_language">language</string>
+    <string name="tmdb_parameter_region">region</string>
+
+    <string name="onsave_movies">parcelable_movies</string>
+    <string name="onsave_movie">parcelable_movie</string>
+
+    <string name="detail_btn_mark_favorite">Like It</string>
+
+    <string name="detail_release_year">Release Year:</string>
+    <string name="detail_rating">Rating:</string>
+    <string name="action_settings">Settings</string>
+
+    <string name="movie_details">Movie Details</string>
+    <string name="no_internet">Sadly we don\'t have internet connectivity that\'s why we can\'t access TMDB\'s data right now</string>
+    <string name="no_movies_from_tmdb">The data we received from TMDB doesn\'t contain any movies</string>
+
+    <string name="title_activity_settings">Settings</string>
+
+    <!-- Strings related to Settings -->
+
+    <string name="pref_header">Settings</string>
+    <string name="pref_sorting">sort_order</string>
+    <string name="pref_title_sorting">Sorting</string>
+    <string-array name="pref_sorting_list_titles">
+        <item>Popular</item>
+        <item>Top Rated</item>
+    </string-array>
+    <string-array name="pref_sorting_list_values">
+        <item>0</item>
+        <item>1</item>
+    </string-array>
+
 </resources>
