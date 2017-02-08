@@ -76,13 +76,14 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
         if(savedInstanceState != null && savedInstanceState.containsKey(getString(R.string.onsave_movies))) {
             mMovies = (Movie[]) savedInstanceState.getParcelableArray(getString(R.string.onsave_movies));
             setMovies(mMovies);
+            showMovieList();
         }
 
         sortOrder = PopularMoviesPreferences.getSortOrder(this);
         // If we couldn't get the Movies back from savedInstanceState then load the movies from TMDB
         if(mMovies == null && isOnline()) {
             loadMovies(sortOrder);
-        }else{
+        }else if(!isOnline()){ // if we don't have network connection show an error
             showErrorMessage(this.getString(R.string.no_internet));
         }
 
@@ -106,7 +107,7 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
      * Makes the RecyclerView visible
      */
     public void showMovieList(){
-        mRecyclerView.setVisibility(View.VISIBLE);
+        mLoadingIndicator.setVisibility(View.GONE); mErrorTextView.setVisibility(View.GONE); mRecyclerView.setVisibility(View.VISIBLE);
     }
 
 
@@ -207,7 +208,10 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
     }
 
 
-
+    /**
+     * Shows the Error TextView with the error message, makes the mRecyclerView and mLoadingIndicator invisible/gone
+     * @param message
+     */
     private void showErrorMessage(String message) {
         mErrorTextView.setText(message);
         mErrorTextView.setVisibility(View.VISIBLE);
@@ -244,6 +248,10 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
         return super.onOptionsItemSelected(item);
     }
 
+
+    /**
+     * If the activity restarts and the sort order (we used to load the movies) differs e.g. changed in settings activity then load the movies using the new sort order
+     */
     @Override
     protected void onRestart() {
         super.onRestart();
@@ -255,6 +263,11 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
         }
     }
 
+
+    /**
+     * A method for checking if we are online
+     * @return network connectivity as boolean
+     */
     public boolean isOnline() {
         ConnectivityManager cm =
                 (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);

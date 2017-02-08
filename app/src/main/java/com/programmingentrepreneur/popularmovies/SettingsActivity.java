@@ -161,8 +161,6 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             // updated to reflect the new value, per the Android Design
             // guidelines.
             ListPreference preference = (ListPreference) findPreference(this.getString(R.string.pref_sorting));
-
-
             bindPreferenceSummaryToValue(preference);
 
 

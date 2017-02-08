@@ -21,8 +21,7 @@ public class PopularMoviesPreferences {
 
 
 
-
-
+    /* Static Methods for setting and getting the current sort order */
 
     static public void setSortOrder(Context context, MovieSorting sorting) {
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
@@ -33,7 +32,9 @@ public class PopularMoviesPreferences {
 
     static public MovieSorting getSortOrder(Context context) {
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
+        // ListPreference uses Strings so we have to parse them to Integers
         int sortOrder = Integer.parseInt(sp.getString(PREF_SORT_ORDER, String.valueOf(DEFAULT_SORT_ORDER)));
+        // The integer we get from the Preferences will be used to retrieve the correct MovieSorting from the enum
         return MovieSorting.getInstanceFromValue(sortOrder);
     }
 

@@ -6,6 +6,7 @@ package com.programmingentrepreneur.popularmovies;
 
 /**
  * An enum which will be used to determine the order in which movies should be fetched
+ * the integers we pass in should be equal with the ones we use in strings.xml
  */
 public enum MovieSorting {
     TOP_RATED(1),
