@@ -34,7 +34,7 @@ public class NetworkUtils {
     final static String REGION_PARAM = "region";
 
 
-
+    //http://api.themoviedb.org/3/movie/popular?api_key=xxxx&region=US&language=en
 
 
     /**
@@ -45,7 +45,7 @@ public class NetworkUtils {
      * @return The complete URL which will be used to fetch TMDB
      */
 
-    public static URL buildMovieUrl(String apiKey, MovieSorting sorting){
+    public static URL buildMovieUrl(String apiKey, @MovieSorting.Sorting int sorting){
 
 
         Uri.Builder builder = Uri.parse(TMDB_BASE_URL).buildUpon()
@@ -53,10 +53,12 @@ public class NetworkUtils {
                 .appendQueryParameter(LANGUAGE_PARAM, language)
                 .appendQueryParameter(REGION_PARAM, region);
 
-        if(sorting == MovieSorting.POPULAR){
+        if(sorting == MovieSorting.SORT_POPULAR){
             builder.path("3/movie/popular");
-        }else{
+        }else if(sorting == MovieSorting.SORT_TOP_RATED){
             builder.path("3/movie/top_rated");
+        }else{
+            return null; // not supported sort method
         }
 
         URL url = null;
@@ -69,6 +71,56 @@ public class NetworkUtils {
 
         return url;
     }
+
+    public static URL buildTrailerUrl(String apiKey, int id){
+
+        if(id == 0) return null;
+
+        Uri.Builder builder = Uri.parse(TMDB_BASE_URL).buildUpon()
+                .appendQueryParameter(API_KEY_PARAM, apiKey)
+                .appendQueryParameter(LANGUAGE_PARAM, language)
+                .appendQueryParameter(REGION_PARAM, region)
+                .path("3/movie/" + id + "/videos");
+
+
+
+
+        URL url = null;
+        try{
+            url = new URL(builder.build().toString());
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+        Log.d(TAG, url.toString());
+
+        return url;
+    }
+
+    public static URL buildReviewsUrl(String apiKey, int id){
+
+        if(id == 0) return null;
+
+        Uri.Builder builder = Uri.parse(TMDB_BASE_URL).buildUpon()
+                .appendQueryParameter(API_KEY_PARAM, apiKey)
+                .appendQueryParameter(LANGUAGE_PARAM, language)
+                .appendQueryParameter(REGION_PARAM, region)
+                .path("3/movie/" + id + "/reviews");
+
+
+
+
+        URL url = null;
+        try{
+            url = new URL(builder.build().toString());
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+        Log.d(TAG, url.toString());
+
+        return url;
+    }
+
+
 
 
 

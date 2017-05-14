@@ -52,7 +52,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="16dp">
+                    android:padding="16dp"
+                    android:paddingTop="16dp">
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -84,17 +85,17 @@
                         android:textSize="16sp"
                         android:id="@+id/tv_rating"
                         android:layout_marginBottom="8dp"/>
-                    <Button
+                    <!--<Button-->
 
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:paddingRight="48dp"
-                        android:paddingLeft="48dp"
-                        android:layout_marginTop="16dp"
-                        android:text="@string/detail_btn_mark_favorite"
-                        android:backgroundTint="@color/colorAccent"
-                        android:textColor="#FFF"
-                       />
+                        <!--android:layout_width="wrap_content"-->
+                        <!--android:layout_height="wrap_content"-->
+                        <!--android:paddingRight="48dp"-->
+                        <!--android:paddingLeft="48dp"-->
+                        <!--android:layout_marginTop="16dp"-->
+                        <!--android:text="@string/detail_btn_mark_favorite"-->
+                        <!--android:backgroundTint="@color/colorAccent"-->
+                        <!--android:textColor="#FFF"-->
+                       <!--/>-->
                 </LinearLayout>
             </LinearLayout>
             <TextView
@@ -104,6 +105,40 @@
                 android:textSize="16sp"
                 android:id="@+id/tv_description"
                 android:lineSpacingExtra="4sp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/trailers"
+                android:textColor="@android:color/primary_text_light"
+                android:textStyle="bold"
+                android:layout_marginLeft="16dp"
+                android:layout_marginStart="16dp"
+                android:textSize="16sp"
+                />
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/rv_trailer"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginBottom="16dp"/>
+            <TextView
+                android:textSize="16sp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/reviews"
+                android:textStyle="bold"
+                android:layout_marginBottom="4dp"
+                android:layout_marginLeft="16dp"
+                android:layout_marginStart="16dp"
+                android:textColor="@android:color/primary_text_light"
+                />
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/rv_reviews"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+
         </LinearLayout>
     </ScrollView>
+
+
 </FrameLayout>

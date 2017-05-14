@@ -2,9 +2,12 @@ package com.programmingentrepreneur.popularmovies;
 
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.os.AsyncTask;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.AsyncTaskLoader;
+import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
@@ -17,18 +20,22 @@ import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.programmingentrepreneur.popularmovies.adapter.MovieAdapter;
+import com.programmingentrepreneur.popularmovies.data.MovieContract;
 import com.programmingentrepreneur.popularmovies.data.PopularMoviesPreferences;
 import com.programmingentrepreneur.popularmovies.utilities.NetworkUtils;
-import com.programmingentrepreneur.popularmovies.utilities.TMDBJsonUtils;
+import com.programmingentrepreneur.popularmovies.utilities.MovieUtils;
 
 import java.net.URL;
 
-public class MainActivity extends AppCompatActivity implements MovieAdapter.MovieAdapterOnClickHandler{
+public class MainActivity extends AppCompatActivity implements MovieAdapter.MovieAdapterOnClickHandler, LoaderManager.LoaderCallbacks<Movie[]>{
 
 
 
 
     private static final String TAG = MainActivity.class.getSimpleName();
+
+    private static final int ID_MOVIE_LOADER = 44;
 
     // Views
     private RecyclerView mRecyclerView;
@@ -40,13 +47,16 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
     private Movie[] mMovies;
 
     // Holds the sort order
-    MovieSorting sortOrder;
+    @MovieSorting.Sorting int sortOrder;
+
+
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
 
 
         mErrorTextView = (TextView) findViewById(R.id.tv_error);
@@ -62,7 +72,7 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
 
 
         // Create the RecyclerView.Adapter for Movies which we'll pass to our RecyclerView
-        mMovieAdapter = new MovieAdapter(this);
+        mMovieAdapter = new MovieAdapter(this, this);
 
         // pass the Adapter to the RecyclerView
         mRecyclerView.setAdapter(mMovieAdapter);
@@ -82,7 +92,7 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
         sortOrder = PopularMoviesPreferences.getSortOrder(this);
         // If we couldn't get the Movies back from savedInstanceState then load the movies from TMDB
         if(mMovies == null && isOnline()) {
-            loadMovies(sortOrder);
+            loadMovies();
         }else if(!isOnline()){ // if we don't have network connection show an error
             showErrorMessage(this.getString(R.string.no_internet));
         }
@@ -92,14 +102,17 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
 
 
     /**
-     * Loads the Movies from TMDB using specified sorting and shows them
-     * @param sorting Responsible for the sorting method we'll apply
+     * Loads the Movies from TMDB and shows the loading indicator
      */
-    private void loadMovies(MovieSorting sorting) {
-        mRecyclerView.setVisibility(View.GONE);
-        mErrorTextView.setVisibility(View.GONE);
-        new FetchMoviesTask().execute(sorting);
+    private void loadMovies() {
 
+        showLoading();
+
+
+
+        // Start the loader which will load the movies
+
+        getSupportLoaderManager().restartLoader(ID_MOVIE_LOADER, null, this);
     }
 
 
@@ -132,70 +145,159 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
         startActivity(intent);
     }
 
+    @Override
+    public Loader<Movie[]> onCreateLoader(int id, final Bundle args) {
+        return new AsyncTaskLoader<Movie[]>(this) {
+
+            /* This String will contain the raw JSON from the results of our Github search */
+
+            @Override
+            protected void onStartLoading() {
+                super.onStartLoading();
+
+                /*
+                 * When we initially begin loading in the background, we want to display the
+                 * loading indicator to the user
+                 */
+                mLoadingIndicator.setVisibility(View.VISIBLE);
+
+
+
+                forceLoad();
+
+                Log.d(TAG, "test2");
+
+            }
+
+            @Override
+            public Movie[] loadInBackground() {
+
+                Log.d(TAG, "test");
+
+                if(sortOrder == MovieSorting.SORT_POPULAR || sortOrder == MovieSorting.SORT_TOP_RATED) {
+                    URL url = NetworkUtils.buildMovieUrl(getString(R.string.tmdb_api_key), sortOrder);
+                    try{
+                        String response = NetworkUtils.getResponseFromHttpUrl(url);
+                        return MovieUtils.getSimpleMoviesFromJson(response);
+                    } catch (Exception e) {
+                        Log.e(TAG, e.getMessage());
+                        e.printStackTrace();
+                        return null;
+                    }
+                }else if(sortOrder == MovieSorting.SORT_FAVORITE){
+                    Cursor cursor = getContentResolver().query(
+                            MovieContract.FavoriteEntry.CONTENT_URI,
+                            null,
+                            null,
+                            null,
+                            null);
+                    return MovieUtils.getMoviesFromCursor(cursor);
+                }
+
+
+                return null;
+            }
+        };
+
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Movie[]> loader, Movie[] movies) {
+        mLoadingIndicator.setVisibility(View.GONE);
+
+        if(movies != null) {
+            showMovieList();
+            setMovies(movies);
+        }else if(sortOrder == MovieSorting.SORT_FAVORITE){
+            showErrorMessage(getString(R.string.no_favorite_movie));
+
+        }else{
+            showErrorMessage(getString(R.string.no_movies_from_tmdb));
+        }
+
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Movie[]> loader) {
+        showLoading();
+        setMovies(null);
+    }
+
+
+    public void showLoading(){
+
+        // Remove any errors before something is loaded
+        mRecyclerView.setVisibility(View.GONE);
+        mErrorTextView.setVisibility(View.GONE);
+
+
+        mLoadingIndicator.setVisibility(View.VISIBLE);
+    }
+
 
     /**
      * AsyncTask responsible for fetching data from TMDB outside of the UI Thread
      */
-    public class FetchMoviesTask extends AsyncTask<MovieSorting, Void, Movie[]> {
-
-        /**
-         * Show the Loading Circle when starting loading
-         */
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            mLoadingIndicator.setVisibility(View.VISIBLE);
-        }
-
-
-        /**
-         * fetched data from TMDB and parses it in an Movies Array
-         * @param params The sorting method we'll use to fetch the Movies
-         * @return a Movie Array
-         */
-        @Override
-        protected Movie[] doInBackground(MovieSorting... params) {
-
-            if (params.length == 0) {
-                return null;
-            }
-
-            MovieSorting sorting = params[0];
-
-            URL url = NetworkUtils.buildMovieUrl(getString(R.string.tmdb_api_key), sorting);
-
-            try{
-                String response = NetworkUtils.getResponseFromHttpUrl(url);
-                return TMDBJsonUtils.getSimpleMoviesFromJson(response);
-            } catch (Exception e) {
-                Log.e(TAG, e.getMessage());
-                e.printStackTrace();
-                return null;
-            }
-
-
-        }
-
-
-        /**
-         * Displays the movies
-         * @param movies The Movie Array we we'll use to show the current available movies
-         */
-        @Override
-        protected void onPostExecute(Movie[] movies) {
-
-            mLoadingIndicator.setVisibility(View.GONE);
-
-            if(movies != null) {
-                showMovieList();
-                setMovies(movies);
-            }else{
-                showErrorMessage(getString(R.string.no_movies_from_tmdb));
-            }
-
-            Log.d(TAG, "item count: " +  mRecyclerView.getAdapter().getItemCount());
-        }
-    }
+//    public class FetchMoviesTask extends AsyncTask<MovieSorting, Void, Movie[]> {
+//
+//        /**
+//         * Show the Loading Circle when starting loading
+//         */
+//        @Override
+//        protected void onPreExecute() {
+//            super.onPreExecute();
+//            mLoadingIndicator.setVisibility(View.VISIBLE);
+//        }
+//
+//
+//        /**
+//         * fetched data from TMDB and parses it in an Movies Array
+//         * @param params The sorting method we'll use to fetch the Movies
+//         * @return a Movie Array
+//         */
+//        @Override
+//        protected Movie[] doInBackground(MovieSorting... params) {
+//
+//            if (params.length == 0) {
+//                return null;
+//            }
+//
+//            MovieSorting sorting = params[0];
+//
+//            URL url = NetworkUtils.buildMovieUrl(getString(R.string.tmdb_api_key), sorting);
+//
+//            try{
+//                String response = NetworkUtils.getResponseFromHttpUrl(url);
+//                return MovieUtils.getSimpleMoviesFromJson(response);
+//            } catch (Exception e) {
+//                Log.e(TAG, e.getMessage());
+//                e.printStackTrace();
+//                return null;
+//            }
+//
+//
+//        }
+//
+//
+//        /**
+//         * Displays the movies
+//         * @param movies The Movie Array we we'll use to show the current available movies
+//         */
+//        @Override
+//        protected void onPostExecute(Movie[] movies) {
+//
+//            mLoadingIndicator.setVisibility(View.GONE);
+//
+//            if(movies != null) {
+//                showMovieList();
+//                setMovies(movies);
+//            }else{
+//                showErrorMessage(getString(R.string.no_movies_from_tmdb));
+//            }
+//
+//            Log.d(TAG, "item count: " +  mRecyclerView.getAdapter().getItemCount());
+//        }
+//    }
 
 
     /**
@@ -256,10 +358,11 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
     protected void onRestart() {
         super.onRestart();
         // if the sort order changed then use a the new one and load the movies with it
-        MovieSorting movieSorting = PopularMoviesPreferences.getSortOrder(this);
+        @MovieSorting.Sorting int movieSorting = PopularMoviesPreferences.getSortOrder(this);
         if(movieSorting != sortOrder){
             sortOrder = movieSorting;
-            loadMovies(movieSorting);
+            Log.d(TAG, "what" + sortOrder);
+            loadMovies();
         }
     }
 

@@ -1,12 +1,14 @@
-package com.programmingentrepreneur.popularmovies;
+package com.programmingentrepreneur.popularmovies.adapter;
 
-import com.programmingentrepreneur.*;
+import android.content.Context;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
+import com.programmingentrepreneur.popularmovies.Movie;
+import com.programmingentrepreneur.popularmovies.R;
 import com.squareup.picasso.Picasso;
 
 /**
@@ -24,7 +26,8 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieAdapter
      * Standard constructer
      * @param clickHandler Handler for handling the item clicks
      */
-    public MovieAdapter(MovieAdapterOnClickHandler clickHandler){
+
+    public MovieAdapter(Context context, MovieAdapterOnClickHandler clickHandler){
         mClickHandler = clickHandler;
     }
 
@@ -82,6 +85,8 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieAdapter
             return mMovies.length;
         return 0;
     }
+
+
 
 
     /**

@@ -6,6 +6,8 @@ import android.preference.PreferenceManager;
 
 import com.programmingentrepreneur.popularmovies.MovieSorting;
 
+import static com.programmingentrepreneur.popularmovies.MovieSorting.SORT_POPULAR;
+
 /**
  * Created by phili on 2/6/2017.
  */
@@ -17,25 +19,25 @@ public class PopularMoviesPreferences {
     public static final String PREF_SORT_ORDER = "sort_order";
 
     /* Default sort order */
-    private static final int DEFAULT_SORT_ORDER = MovieSorting.POPULAR.getValue();
+    private static final @MovieSorting.Sorting int DEFAULT_SORT_ORDER = SORT_POPULAR;
 
 
 
     /* Static Methods for setting and getting the current sort order */
 
-    static public void setSortOrder(Context context, MovieSorting sorting) {
+    static public void setSortOrder(Context context, @MovieSorting.Sorting int sorting) {
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
         SharedPreferences.Editor editor = sp.edit();
-        editor.putString(PREF_SORT_ORDER, String.valueOf(sorting.getValue()));
+        editor.putString(PREF_SORT_ORDER, String.valueOf(sorting));
         editor.apply();
     }
 
-    static public MovieSorting getSortOrder(Context context) {
+    static public @MovieSorting.Sorting int getSortOrder(Context context) {
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
         // ListPreference uses Strings so we have to parse them to Integers
-        int sortOrder = Integer.parseInt(sp.getString(PREF_SORT_ORDER, String.valueOf(DEFAULT_SORT_ORDER)));
+        @MovieSorting.Sorting int sortOrder = Integer.parseInt(sp.getString(PREF_SORT_ORDER, String.valueOf(DEFAULT_SORT_ORDER)));
         // The integer we get from the Preferences will be used to retrieve the correct MovieSorting from the enum
-        return MovieSorting.getInstanceFromValue(sortOrder);
+        return sortOrder;
     }
 
 

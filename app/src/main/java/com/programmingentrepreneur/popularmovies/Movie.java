@@ -5,6 +5,8 @@ import android.os.Parcelable;
 
 import org.json.JSONObject;
 
+import java.util.List;
+
 /**
  * Created by phili on 1/30/2017.
  */
@@ -27,6 +29,9 @@ public class Movie implements Parcelable{
     private int voteCount;
     private boolean video;
     private String voteAverage;
+    private List<Trailer> trailerList;
+    private List<Review> reviewList;
+    private boolean isFavorite;
 
 
     /* Standard Constructor expecting title */
@@ -37,6 +42,22 @@ public class Movie implements Parcelable{
 
 
     /* Getter and Setter */
+
+    public List<Trailer> getTrailerList() {
+        return trailerList;
+    }
+
+    public void setTrailerList(List<Trailer> trailerList) {
+        this.trailerList = trailerList;
+    }
+
+    public List<Review> getReviewList() {
+        return reviewList;
+    }
+
+    public void setReviewList(List<Review> reviewList) {
+        this.reviewList = reviewList;
+    }
 
     public String getTitle() {
         return title;
@@ -150,14 +171,16 @@ public class Movie implements Parcelable{
         this.video = video;
     }
 
+    public boolean isFavorite() {
+        return isFavorite;
+    }
+
+    public void setFavorite(boolean favorite) {
+        isFavorite = favorite;
+    }
 
 
-
-
-
-
-
-    /* Parcelable Implementations */
+/* Parcelable Implementations */
 
     protected Movie(Parcel in) {
         title = in.readString();
@@ -166,6 +189,7 @@ public class Movie implements Parcelable{
         releaseDate = in.readString();
         genreIds = in.createIntArray();
         adult = in.readByte() != 0;
+        isFavorite = in.readByte() != 0;
         id = in.readInt();
         originalTitle = in.readString();
         originalLanguage = in.readString();
@@ -174,6 +198,8 @@ public class Movie implements Parcelable{
         voteCount = in.readInt();
         video = in.readByte() != 0;
         voteAverage = in.readString();
+        trailerList = in.readArrayList(Trailer.class.getClassLoader());
+        reviewList = in.readArrayList(Review.class.getClassLoader());
     }
 
     public static final Creator<Movie> CREATOR = new Creator<Movie>() {
@@ -202,6 +228,7 @@ public class Movie implements Parcelable{
         dest.writeString(releaseDate);
         dest.writeIntArray(genreIds);
         dest.writeByte((byte) (adult ? 1 : 0));
+        dest.writeByte((byte) (isFavorite ? 1 : 0));
         dest.writeInt(id);
         dest.writeString(originalTitle);
         dest.writeString(originalLanguage);
@@ -210,5 +237,15 @@ public class Movie implements Parcelable{
         dest.writeInt(voteCount);
         dest.writeByte((byte) (video ? 1 : 0));
         dest.writeString(voteAverage);
+        dest.writeList(trailerList);
+        dest.writeList(reviewList);
     }
+
+
+
+
+
+
+
+
 }
