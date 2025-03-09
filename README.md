@@ -1,5 +1,5 @@
 # popular-movies
-This project was part of the Android Fast Developer Track at Udacity for the Android Developer Certification.
+This project was part of the exercises in the Android Fast Developer Track at Udacity for the Google Android Developer Certification.
 
 ## Setup
 Go to `app/src/main/res/values/strings.xml` and replace 
